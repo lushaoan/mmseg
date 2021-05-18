@@ -24,10 +24,10 @@ class PPM(nn.ModuleList):
     def __init__(self, pool_scales, in_channels, channels, conv_cfg, norm_cfg,
                  act_cfg, align_corners):
         super(PPM, self).__init__()
-        self.pool_scales = pool_scales
+        self.pool_scales = pool_scales       # (1, 2, 3, 6)
         self.align_corners = align_corners
-        self.in_channels = in_channels
-        self.channels = channels
+        self.in_channels = in_channels       # 512
+        self.channels = channels             # 128
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
@@ -96,6 +96,6 @@ class PSPHead(BaseDecodeHead):
         psp_outs = [x]
         psp_outs.extend(self.psp_modules(x))
         psp_outs = torch.cat(psp_outs, dim=1)
-        output = self.bottleneck(psp_outs)
-        output = self.cls_seg(output)
+        output = self.bottleneck(psp_outs)      # output channel = self.channels
+        output = self.cls_seg(output)           # 输出num_class个channel
         return output

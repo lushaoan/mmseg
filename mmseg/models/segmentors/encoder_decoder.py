@@ -13,6 +13,8 @@ from .base import BaseSegmentor
 class EncoderDecoder(BaseSegmentor):
     """Encoder Decoder segmentors.
 
+    auxiliary_head只在训练时辅助训练，inference时不起作用
+
     EncoderDecoder typically consists of backbone, decode_head, auxiliary_head.
     Note that auxiliary_head is only used for deep supervision during training,
     which could be dumped during inference.

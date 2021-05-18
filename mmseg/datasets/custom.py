@@ -189,7 +189,9 @@ class CustomDataset(Dataset):
         if self.test_mode:
             return self.prepare_test_img(idx)
         else:
-            return self.prepare_train_img(idx)
+            data = self.prepare_train_img(idx)
+            return data
+            # return self.prepare_train_img(idx)
 
     def prepare_train_img(self, idx):
         """Get training data and annotations after pipeline.

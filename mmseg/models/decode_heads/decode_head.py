@@ -169,6 +169,9 @@ class BaseDecodeHead(nn.Module, metaclass=ABCMeta):
 
     def forward_train(self, inputs, img_metas, gt_semantic_seg, train_cfg):
         """Forward function for training.
+
+        gt_semantic_seg.shape = [batch, 1, 512, 512]
+
         Args:
             inputs (list[Tensor]): List of multi-level img features.
             img_metas (list[dict]): List of image info dict where each dict
@@ -183,7 +186,7 @@ class BaseDecodeHead(nn.Module, metaclass=ABCMeta):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        seg_logits = self.forward(inputs)
+        seg_logits = self.forward(inputs)          # [batch, num_class, 64, 64]
         losses = self.losses(seg_logits, gt_semantic_seg)
         return losses
 
@@ -224,7 +227,7 @@ class BaseDecodeHead(nn.Module, metaclass=ABCMeta):
             seg_weight = self.sampler.sample(seg_logit, seg_label)
         else:
             seg_weight = None
-        seg_label = seg_label.squeeze(1)
+        seg_label = seg_label.squeeze(1)    # [batch, 512, 512]
         loss['loss_seg'] = self.loss_decode(
             seg_logit,
             seg_label,
