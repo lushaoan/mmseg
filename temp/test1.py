@@ -8,4 +8,5 @@ __copyright__ = 'Copyright 2021, PI'
 
 import torch
 
-torch.nn.CrossEntropyLoss
+res = torch.nn.functional.softmax(torch.tensor([13,9,9], dtype=torch.float32))
+print(res)
