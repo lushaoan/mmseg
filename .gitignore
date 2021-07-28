@@ -113,6 +113,7 @@ data
 *.log.json
 work_dirs/
 temp/
+mmseg/.mim
 
 # Pytorch
 *.pth

@@ -19,7 +19,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'MMSegmentation'
-copyright = '2020-2020, OpenMMLab'
+copyright = '2020-2021, OpenMMLab'
 author = 'MMSegmentation Authors'
 version_file = '../mmseg/version.py'
 
@@ -46,7 +46,9 @@ extensions = [
     'sphinx_markdown_tables',
 ]
 
-autodoc_mock_imports = ['matplotlib', 'pycocotools', 'mmseg.version']
+autodoc_mock_imports = [
+    'matplotlib', 'pycocotools', 'mmseg.version', 'mmcv.ops'
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -78,6 +80,8 @@ html_theme = 'sphinx_rtd_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+language = 'en'
 
 
 def builder_inited_handler(app):
