@@ -1,9 +1,9 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import math
 import warnings
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from mmcv.cnn import (build_norm_layer, constant_init, kaiming_init,
                       normal_init, trunc_normal_init)
 from mmcv.cnn.bricks.transformer import FFN, MultiheadAttention
@@ -11,9 +11,10 @@ from mmcv.runner import BaseModule, ModuleList, _load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.utils import _pair as to_2tuple
 
+from mmseg.ops import resize
 from mmseg.utils import get_root_logger
 from ..builder import BACKBONES
-from ..utils import PatchEmbed, vit_convert
+from ..utils import PatchEmbed
 
 
 class TransformerEncoderLayer(BaseModule):
@@ -139,8 +140,6 @@ class VisionTransformer(BaseModule):
             and its variants only. Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save
             some memory while slowing down the training speed. Default: False.
-        pretrain_style (str): Choose to use timm or mmcls pretrain weights.
-            Default: timm.
         pretrained (str, optional): model pretrained path. Default: None.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
@@ -169,7 +168,6 @@ class VisionTransformer(BaseModule):
                  num_fcs=2,
                  norm_eval=False,
                  with_cp=False,
-                 pretrain_style='timm',
                  pretrained=None,
                  init_cfg=None):
         super(VisionTransformer, self).__init__()
@@ -182,8 +180,6 @@ class VisionTransformer(BaseModule):
             assert len(img_size) == 2, \
                 f'The size of image should have length 1 or 2, ' \
                 f'but got {len(img_size)}'
-
-        assert pretrain_style in ['timm', 'mmcls']
 
         if output_cls_token:
             assert with_cls_token is True, f'with_cls_token must be True if' \
@@ -200,7 +196,6 @@ class VisionTransformer(BaseModule):
         self.interpolate_mode = interpolate_mode
         self.norm_eval = norm_eval
         self.with_cp = with_cp
-        self.pretrain_style = pretrain_style
         self.pretrained = pretrained
         self.init_cfg = init_cfg
 
@@ -271,16 +266,8 @@ class VisionTransformer(BaseModule):
                 self.pretrained, logger=logger, map_location='cpu')
             if 'state_dict' in checkpoint:
                 state_dict = checkpoint['state_dict']
-            elif 'model' in checkpoint:
-                state_dict = checkpoint['model']
             else:
                 state_dict = checkpoint
-
-            if self.pretrain_style == 'timm':
-                # Because the refactor of vit is blocked by mmcls,
-                # so we firstly use timm pretrain weights to train
-                # downstream model.
-                state_dict = vit_convert(state_dict)
 
             if 'pos_embed' in state_dict.keys():
                 if self.pos_embed.shape != state_dict['pos_embed'].shape:
@@ -373,7 +360,7 @@ class VisionTransformer(BaseModule):
         pos_embed_weight = pos_embed[:, (-1 * pos_h * pos_w):]
         pos_embed_weight = pos_embed_weight.reshape(
             1, pos_h, pos_w, pos_embed.shape[2]).permute(0, 3, 1, 2)
-        pos_embed_weight = F.interpolate(
+        pos_embed_weight = resize(
             pos_embed_weight, size=input_shpae, align_corners=False, mode=mode)
         cls_token_weight = cls_token_weight.unsqueeze(1)
         pos_embed_weight = torch.flatten(pos_embed_weight, 2).transpose(1, 2)
